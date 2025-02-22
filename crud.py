@@ -55,8 +55,8 @@ class UsuarioFerias(Base):
         for evento in self.eventos_ferias:
             lista_eventos.append({
             "title": f"Férias do {self.nome}",
-            "start": evento.inicio_ferias,
-            "end": evento.fim_ferias,
+            "start": evento.inicio_ferias + ' 00:00:00',
+            "end": evento.fim_ferias + ' 23:59:00',
             "resourceId": self.id
         })
         return lista_eventos
