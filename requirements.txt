@@ -3,3 +3,4 @@ werkzeug
 streamlit
 pandas
 streamlit_calendar
+pandas

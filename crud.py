@@ -1,6 +1,6 @@
 from typing import List
 from pathlib import Path
-
+from datetime import datetime
 from sqlalchemy import create_engine, String, Boolean, Integer, select, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session, relationship
 
@@ -34,7 +34,42 @@ class UsuarioFerias(Base):
 
     def verifica_senha(self, senha):
         return check_password_hash(self.senha, senha)
+    
+    def adiciona_ferias(self, inicio_ferias, fim_ferias):
+        total_dias = (
+            datetime.strptime(fim_ferias, '%Y-%m-%d')
+            - datetime.strptime(inicio_ferias, '%Y-%m-%d')
+        ).days + 1
+        with Session(bind=engine) as session:
+            ferias = EventosFerias(
+                parent_id = self.id,
+                inicio_ferias = inicio_ferias,
+                fim_ferias = fim_ferias,
+                total_dias = total_dias
+            )
+            session.add(ferias)
+            session.commit()
 
+    def lista_ferias(self):
+        lista_eventos = []
+        for evento in self.eventos_ferias:
+            lista_eventos.append({
+            "title": f"Férias do {self.nome}",
+            "start": evento.inicio_ferias,
+            "end": evento.fim_ferias,
+            "resourceId": self.id
+        })
+        return lista_eventos
+    
+    def dias_para_solicitar(self):
+        total_dias = (
+        datetime.now()
+        - datetime.strptime(self.inicio_na_empresa, '%Y-%m-%d')
+        ).days * (30/365)
+        dias_tirados = 0
+        for evento in self.eventos_ferias:
+            dias_tirados += evento.total_dias
+        return int(total_dias - dias_tirados)
 
 class EventosFerias(Base):
     __tablename__ = 'eventos_ferias'
