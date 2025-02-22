@@ -1,6 +1,6 @@
 from typing import List
 from pathlib import Path
-
+from datetime import datetime
 from sqlalchemy import create_engine, String, Boolean, Integer, select, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session, relationship
 
@@ -34,7 +34,32 @@ class UsuarioFerias(Base):
 
     def verifica_senha(self, senha):
         return check_password_hash(self.senha, senha)
+    
+    def adiciona_ferias(self, inicio_ferias, fim_ferias):
+        total_dias = (
+            datetime.strptime(fim_ferias, '%Y-%m-%d')
+            - datetime.strptime(inicio_ferias, '%Y-%m-%d')
+        ).days + 1
+        with Session(bind=engine) as session:
+            ferias = EventosFerias(
+                parent_id = self.id,
+                inicio_ferias = inicio_ferias,
+                fim_ferias = fim_ferias,
+                total_dias = total_dias
+            )
+            session.add(ferias)
+            session.commit()
 
+    def lista_ferias(self):
+        lista_eventos = []
+        for evento in self.eventos_ferias:
+            lista_eventos.append({
+            "title": f"Férias do {self.nome}",
+            "start": evento.inicio_ferias,
+            "end": evento.fim_ferias,
+            "resourceId": self.id
+        })
+        return lista_eventos
 
 class EventosFerias(Base):
     __tablename__ = 'eventos_ferias'
