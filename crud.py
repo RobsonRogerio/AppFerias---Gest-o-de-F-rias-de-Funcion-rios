@@ -60,6 +60,16 @@ class UsuarioFerias(Base):
             "resourceId": self.id
         })
         return lista_eventos
+    
+    def dias_para_solicitar(self):
+        total_dias = (
+        datetime.now()
+        - datetime.strptime(self.inicio_na_empresa, '%Y-%m-%d')
+        ).days * (30/365)
+        dias_tirados = 0
+        for evento in self.eventos_ferias:
+            dias_tirados += evento.total_dias
+        return int(total_dias - dias_tirados)
 
 class EventosFerias(Base):
     __tablename__ = 'eventos_ferias'

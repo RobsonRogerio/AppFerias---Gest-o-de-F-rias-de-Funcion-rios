@@ -25,6 +25,26 @@ def login():
             else:
                 st.error('Senha incorreta')
 
+def pagina_gestao():
+    with st.sidebar:
+        tab_gestao_usuarios()
+    
+    usuarios = le_todos_usuarios()
+
+    for usuario in usuarios:
+        with st.container(border=True):
+            cols = st.columns(2)
+            dias_para_solicitar = usuario.dias_para_solicitar()
+            with cols[0]:
+                if dias_para_solicitar > 40:
+                    st.error(f'### {usuario.nome}')
+                else:
+                    st.markdown(f'### {usuario.nome}')
+            with cols[1]:
+                if dias_para_solicitar > 40:
+                    st.error(f'#### Dias para solicitar: {dias_para_solicitar}')
+                else:
+                    st.markdown(f'#### Dias para solicitar: {dias_para_solicitar}')
 
 def tab_gestao_usuarios():
     tab_vis, tab_cria, tab_mod, tab_del = st.tabs(
@@ -133,6 +153,10 @@ def pagina_calendario():
 
     usuario = st.session_state['usuario']
 
+    with st.expander('Dias para solicitar'):
+        dias_para_solicitar = usuario.dias_para_solicitar()
+        st.markdown(f'O usuario {usuario.nome} possui **{dias_para_solicitar}** dias para solicitar')
+
     calendar_widget = calendar(events=calendar_events, options=calendar_options)
     if ('callback' in calendar_widget 
         and calendar_widget['callback'] == 'dateClick'):
@@ -169,7 +193,6 @@ def pagina_calendario():
                         args=(date_inicio, date)
                         )
 
-
 def pagina_principal():
     st.title('Bem-vindo ao AppFerias')
     st.divider()
@@ -187,8 +210,7 @@ def pagina_principal():
                 st.rerun()
 
     if st.session_state['pag_gestao_usuarios']:
-        with st.sidebar:
-            tab_gestao_usuarios()
+        pagina_gestao()
     else:
         pagina_calendario()
 
